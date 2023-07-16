@@ -37,3 +37,6 @@ jobs:
 workflows:
   capstone-pipeline:
     jobs:
+      - docker-linting
+      - docker-build:
+          requires: [docker-linting]

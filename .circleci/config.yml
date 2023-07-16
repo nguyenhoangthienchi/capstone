@@ -1,2 +1,39 @@
 version: 2.1
 
+executors:
+  docker:
+    docker:
+      - image: docker:stable
+
+jobs:
+  docker-linting:
+    executor: docker
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Hadolint
+          command: docker run --rm -i ghcr.io/hadolint/hadolint < app/Dockerfile
+
+  docker-build:
+    executor: docker
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: build docker image
+          command: docker build -t capstone ./app
+      - run:
+          name: tag the image
+          command: docker tag capstone $DOCKER_USERNAME/capstone:${CIRCLE_WORKFLOW_ID:0:7}
+      - run:
+          name: sign in dockerhub
+          command: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - run:
+          name: publish image
+          command: docker push $DOCKER_USERNAME/capstone:${CIRCLE_WORKFLOW_ID:0:7}
+
+
+workflows:
+  capstone-pipeline:
+    jobs:

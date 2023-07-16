@@ -31,11 +31,11 @@ jobs:
           name: tag the image
           command: docker tag capstone $DOCKER_USERNAME/capstone:latest
       - run:
-          name: Login Docker hub
-          command: docker login -u $DOCKER_USERNAME -p $DOCKER_PASS
+          name: sign in dockerhub
+          command: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
       - run:
           name: Push image
-          command: docker push lqtoan20/capstone-devops:v1
+          command: docker push $DOCKER_USERNAME/capstone:latest
 
   deploy:
     docker:

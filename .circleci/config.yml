@@ -31,15 +31,26 @@ jobs:
           name: tag the image
           command: docker tag capstone $DOCKER_USERNAME/capstone:latest
       - run:
-          name: sign in dockerhub
-          command: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+          name: Login Docker hub
+          command: docker login -u $DOCKER_USERNAME -p $DOCKER_PASS
       - run:
-          name: publish image
-          command: docker push $DOCKER_USERNAME/capstone:latest
+          name: Push image
+          command: docker push lqtoan20/capstone-devops:v1
 
   deploy:
     docker:
       - image: cimg/python:3.11.4
+    parameters:
+      cluster-name:
+        description: |
+          Name of the EKS cluster
+        type: string
+        default: "test"
+      aws-region:
+        description: |
+          AWS region
+        type: string
+        default: "us-east-1"
     steps:
       - checkout
       - setup_remote_docker
@@ -49,12 +60,12 @@ jobs:
             sudo apt install -y tar gzip curl
       - kubernetes/install-kubectl
       - aws-eks/update-kubeconfig-with-authenticator:
-          cluster-name: test
-          aws-region: us-east-1
+          cluster-name: << parameters.cluster-name >>
+          aws-region: << parameters.aws-region >>
           install-kubectl: true
       - kubernetes/create-or-update-resource:
           resource-file-path: ./kubernetes/deployment.yml
-          resource-name: deployment/capstone
+          resource-name: deployment/capstone-app
           get-rollout-status: true
           show-kubectl-command: true
       - kubernetes/create-or-update-resource:
@@ -70,7 +81,6 @@ jobs:
       - run:
           name: Cleaning up
           command: docker system prune
-
 
 workflows:
   capstone-pipeline:

@@ -9,6 +9,9 @@ function App() {
         <p>
           ChiNHT2's Capstone project
         </p>
+        <p>
+          <img src="https://images.theconversation.com/files/38926/original/5cwx89t4-1389586191.jpg?ixlib=rb-1.1.0&q=45&auto=format&w=926&fit=clip" />
+        </p>
         <a
           className="App-link"
           href="https://reactjs.org"

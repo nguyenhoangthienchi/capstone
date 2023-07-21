@@ -1,0 +1,60 @@
+Description: >
+  Amazon EKS cluster
+
+Parameters:
+  ProjectName:
+    Description: An Environment name that will be prefixed to resources
+    Type: String
+    Default: Capstone
+
+Resources:
+  ClusterInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref EKSClusterRole
+
+  EKSClusterRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - eks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: "/"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
+        - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
+        - arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess
+
+  CapstoneEKS:
+    Type: AWS::EKS::Cluster
+    Properties:
+      Version: "1.25"
+      RoleArn: !GetAtt EKSClusterRole.Arn
+      ResourcesVpcConfig:
+        SecurityGroupIds:
+          - Fn::ImportValue: !Sub "${ProjectName}-security-group"
+        SubnetIds:
+          Fn::Split:
+            - ","
+            - Fn::ImportValue:
+                Fn::Sub: ${ProjectName}-pub-sbns
+Outputs:
+  EksId:
+    Description: The EKS id.
+    Value: !Ref CapstoneEKS
+    Export:
+      Name: !Sub ${ProjectName}-eks-cluster
+
+  EKSRoleArn:
+    Description: The role that Amazon EKS will use to create AWS resources for Kubernetes clusters
+    Value: !GetAtt EKSClusterRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-eks-role-arn"

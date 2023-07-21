@@ -3,7 +3,7 @@ FROM node:12 as node
 
 WORKDIR /app
 
-ADD ./ /app/
+COPY ./ /app/
 
 RUN npm install && npm run build
 
